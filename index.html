@@ -1,163 +1,87 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قائمة القنوات المباشرة</title>
-    <!-- تحميل Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { font-family: 'Tahoma', sans-serif; background-color: #0d1117; color: #e5e7eb; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>قائمة القنوات المباشرة</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: "Tahoma", sans-serif;
+      background-color: #0d1117;
+      color: #e5e7eb;
+    }
 
-        .channel-card { 
-            background-color: #5b21b6;
-            transition: transform 0.2s, box-shadow 0.2s; 
-            color: #ffffff;
-            height: 120px; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .channel-card:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3); 
-            background-color: #4c1d95;
-        }
-        .channel-name { 
-            font-size: 1.5rem;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
-        #video-player-container {
-            position: relative;
-            width: 100%;
-            padding-top: 56.25%;
-        }
-        #video-iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-    </style>
+    .channel-card {
+      background-color: #5b21b6;
+      transition: transform 0.2s, box-shadow 0.2s;
+      color: #ffffff;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .channel-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+      background-color: #4c1d95;
+    }
+    .channel-name {
+      font-size: 1.5rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body class="p-4 md:p-8">
-
-    <div class="max-w-6xl mx-auto mt-6">
-        
-        <!-- صفحة عرض الفيديو -->
-        <div id="video-player-section" class="hidden">
-            <div id="video-player-container">
-                <iframe id="video-iframe" allow="autoplay; camera; microphone; fullscreen; speaker; display-capture"></iframe>
-            </div>
-        </div>
-
-        <!-- قائمة القنوات -->
-        <div id="channels-list-section">
-            <div id="channels-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"></div>
-        </div>
+  <div class="max-w-6xl mx-auto mt-6">
+    <div id="channels-list-section">
+      <div
+        id="channels-grid"
+        class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"
+      ></div>
     </div>
+  </div>
 
-    <script>
-        // **********************************************
-        // 1. بيانات القنوات
-        // **********************************************
-        const VDO_NINJA_BASE_URL = "https://vdo.ninja/?view=";
-        const VDO_NINJA_PARAMS = "&autoplay=1&muted=1&cleanout&iframe"; // تشغيل تلقائي بدون صوت
+  <script>
+    // روابط القنوات
+    const CHANNELS_DATA = [
+      { id: 1, name: "beIN SPORTS 1", view_id: "ikMLVyh" },
+      { id: 2, name: "beIN SPORTS 2", view_id: "your_vdo_id_2" },
+      { id: 3, name: "beIN SPORTS 3", view_id: "your_vdo_id_3" },
+      { id: 4, name: "beIN SPORTS 4", view_id: "your_vdo_id_4" },
+      { id: 5, name: "beIN SPORTS 5", view_id: "your_vdo_id_5" },
+    ];
 
-        const CHANNELS_DATA = [
-            { id: 1, name: "beIN SPORTS 1", view_id: "ikMLVyh" },
-            { id: 2, name: "beIN SPORTS 2", view_id: "your_vdo_id_2" },
-            { id: 3, name: "beIN SPORTS 3", view_id: "your_vdo_id_3" },
-            { id: 4, name: "beIN SPORTS 4", view_id: "your_vdo_id_4" },
-            { id: 5, name: "beIN SPORTS 5", view_id: "your_vdo_id_5" },
-            { id: 6, name: "beIN SPORTS 6", view_id: "your_vdo_id_6" },
-            { id: 7, name: "beIN SPORTS 7", view_id: "your_vdo_id_7" },
-            { id: 8, name: "beIN SPORTS 8", view_id: "your_vdo_id_8" },
-            { id: 9, name: "beIN SPORTS 9", view_id: "your_vdo_id_9" },
-            { id: 10, name: "beIN SPORTS 10", view_id: "your_vdo_id_10" },
-            { id: 11, name: "beIN SPORTS 11", view_id: "your_vdo_id_11" },
-        ];
+    const VDO_NINJA_BASE_URL = "https://vdo.ninja/?view=";
+    const VDO_NINJA_PARAMS = "&autoplay=1&muted=0&cleanout"; // صوت مفعّل وتشغيل مباشر
 
-        const videoSection = document.getElementById('video-player-section');
-        const listSection = document.getElementById('channels-list-section');
-        const videoIframe = document.getElementById('video-iframe');
+    function createChannelCard(channel) {
+      const card = document.createElement("div");
+      card.className =
+        "channel-card p-4 rounded-xl shadow-xl border border-purple-900 cursor-pointer text-center";
+      card.innerHTML = `<p class="channel-name">${channel.name}</p>`;
 
-        // **********************************************
-        // 2. إنشاء كروت القنوات
-        // **********************************************
-        function createChannelCard(channel) {
-            const card = document.createElement('div');
-            card.className = 'channel-card p-4 rounded-xl shadow-xl border border-purple-900 cursor-pointer text-center';
-            card.onclick = () => openStream(channel.view_id); 
-            card.innerHTML = `<p class="channel-name">${channel.name}</p>`;
-            return card;
+      // عند الضغط على القناة، افتح البث في نافذة جديدة (تشغيل مباشر)
+      card.onclick = () => {
+        if (channel.view_id.includes("your_vdo_id")) {
+          alert("الرجاء تحديث كود البث لهذه القناة في ملف HTML.");
+          return;
         }
+        const fullUrl = VDO_NINJA_BASE_URL + channel.view_id + VDO_NINJA_PARAMS;
+        window.location.href = fullUrl; // يفتح البث مباشرة في نفس الصفحة
+      };
+      return card;
+    }
 
-        // **********************************************
-        // 3. فتح البث
-        // **********************************************
-        function openStream(viewId) {
-            if (viewId.includes('your_vdo_id')) {
-                alert('الرجاء تحديث كود البث لهذه القناة في ملف HTML.');
-                return;
-            }
+    function initializeGrid() {
+      const gridContainer = document.getElementById("channels-grid");
+      CHANNELS_DATA.forEach((channel) => {
+        gridContainer.appendChild(createChannelCard(channel));
+      });
+    }
 
-            const fullUrl = VDO_NINJA_BASE_URL + viewId + VDO_NINJA_PARAMS;
-
-            // إضافة حالة جديدة حتى يعمل زر الرجوع للهاتف
-            history.pushState({ playing: true }, '', '');
-
-            listSection.style.display = 'none';
-            videoSection.classList.remove('hidden');
-            videoIframe.src = fullUrl;
-
-            // الدخول إلى ملء الشاشة
-            const container = document.getElementById('video-player-container');
-            if (container.requestFullscreen) container.requestFullscreen().catch(() => {});
-            else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
-        }
-
-        // **********************************************
-        // 4. إغلاق البث (عند استخدام زر الرجوع في الهاتف)
-        // **********************************************
-        function closeStream() {
-            videoIframe.src = '';
-
-            // الخروج من ملء الشاشة إن وُجد
-            if (document.fullscreenElement) {
-                document.exitFullscreen().catch(() => {});
-            } else if (document.webkitFullscreenElement) {
-                document.webkitExitFullscreen();
-            }
-
-            listSection.style.display = 'block';
-            videoSection.classList.add('hidden');
-        }
-
-        // **********************************************
-        // 5. تشغيل وظيفة زر الرجوع للهاتف
-        // **********************************************
-        window.addEventListener('popstate', function () {
-            if (!videoSection.classList.contains('hidden')) {
-                closeStream();
-            }
-        });
-
-        // **********************************************
-        // 6. تهيئة الصفحة
-        // **********************************************
-        function initializeGrid() {
-            const gridContainer = document.getElementById('channels-grid');
-            CHANNELS_DATA.forEach(channel => {
-                gridContainer.appendChild(createChannelCard(channel));
-            });
-        }
-
-        window.onload = initializeGrid;
-    </script>
+    window.onload = initializeGrid;
+  </script>
 </body>
 </html>
