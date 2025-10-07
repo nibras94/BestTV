@@ -42,14 +42,6 @@
             height: 100%;
             border: none;
         }
-
-        .btn-back {
-            background-color: #f59e0b;
-            transition: background-color 0.2s;
-        }
-        .btn-back:hover {
-            background-color: #d97706;
-        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -58,13 +50,7 @@
         
         <!-- صفحة عرض الفيديو -->
         <div id="video-player-section" class="hidden">
-            <button id="back-button" class="btn-back text-white font-bold py-2 px-4 rounded-lg mb-4 flex items-center shadow-lg transform active:scale-95">
-                <svg class="w-5 h-5 mr-2 rtl:ml-2 rtl:mr-0 transform rtl:rotate-180" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
-                </svg>
-                العودة لقائمة القنوات
-            </button>
-            <div id="video-player-container" style="display: block; padding-top: 56.25%;">
+            <div id="video-player-container">
                 <iframe id="video-iframe" allow="autoplay; camera; microphone; fullscreen; speaker; display-capture"></iframe>
             </div>
         </div>
@@ -80,7 +66,7 @@
         // 1. بيانات القنوات
         // **********************************************
         const VDO_NINJA_BASE_URL = "https://vdo.ninja/?view=";
-        const VDO_NINJA_PARAMS = "&cleanout&iframe";
+        const VDO_NINJA_PARAMS = "&autoplay=1&muted=1&cleanout&iframe"; // تشغيل تلقائي بدون صوت
 
         const CHANNELS_DATA = [
             { id: 1, name: "beIN SPORTS 1", view_id: "ikMLVyh" },
@@ -99,10 +85,9 @@
         const videoSection = document.getElementById('video-player-section');
         const listSection = document.getElementById('channels-list-section');
         const videoIframe = document.getElementById('video-iframe');
-        const backButton = document.getElementById('back-button');
 
         // **********************************************
-        // 2. إنشاء الكروت
+        // 2. إنشاء كروت القنوات
         // **********************************************
         function createChannelCard(channel) {
             const card = document.createElement('div');
@@ -113,7 +98,7 @@
         }
 
         // **********************************************
-        // 3. فتح البث بوضع أفقي + ملء الشاشة
+        // 3. فتح البث
         // **********************************************
         function openStream(viewId) {
             if (viewId.includes('your_vdo_id')) {
@@ -122,36 +107,27 @@
             }
 
             const fullUrl = VDO_NINJA_BASE_URL + viewId + VDO_NINJA_PARAMS;
+
+            // إضافة حالة جديدة حتى يعمل زر الرجوع للهاتف
+            history.pushState({ playing: true }, '', '');
+
             listSection.style.display = 'none';
             videoSection.classList.remove('hidden');
             videoIframe.src = fullUrl;
 
-            // محاولة قفل الاتجاه إلى الوضع الأفقي
-            if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock('landscape').catch(err => console.warn("تعذر قفل الاتجاه:", err));
-            }
-
-            // محاولة الدخول في وضع ملء الشاشة
+            // الدخول إلى ملء الشاشة
             const container = document.getElementById('video-player-container');
-            if (container.requestFullscreen) {
-                container.requestFullscreen().catch(() => {});
-            } else if (container.webkitRequestFullscreen) { // Safari
-                container.webkitRequestFullscreen();
-            }
+            if (container.requestFullscreen) container.requestFullscreen().catch(() => {});
+            else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
         }
 
         // **********************************************
-        // 4. إغلاق البث والعودة
+        // 4. إغلاق البث (عند استخدام زر الرجوع في الهاتف)
         // **********************************************
         function closeStream() {
             videoIframe.src = '';
 
-            // العودة للوضع الرأسي
-            if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock('portrait').catch(() => {});
-            }
-
-            // الخروج من ملء الشاشة
+            // الخروج من ملء الشاشة إن وُجد
             if (document.fullscreenElement) {
                 document.exitFullscreen().catch(() => {});
             } else if (document.webkitFullscreenElement) {
@@ -163,14 +139,22 @@
         }
 
         // **********************************************
-        // 5. تهيئة الواجهة
+        // 5. تشغيل وظيفة زر الرجوع للهاتف
+        // **********************************************
+        window.addEventListener('popstate', function () {
+            if (!videoSection.classList.contains('hidden')) {
+                closeStream();
+            }
+        });
+
+        // **********************************************
+        // 6. تهيئة الصفحة
         // **********************************************
         function initializeGrid() {
             const gridContainer = document.getElementById('channels-grid');
             CHANNELS_DATA.forEach(channel => {
                 gridContainer.appendChild(createChannelCard(channel));
             });
-            backButton.onclick = closeStream;
         }
 
         window.onload = initializeGrid;
