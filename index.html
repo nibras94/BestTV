@@ -4,17 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>قائمة القنوات المباشرة</title>
-    <!-- تحميل Tailwind CSS لأفضل استجابة وتصميم -->
+    <!-- تحميل Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* أنماط أساسية لتطبيق المظهر الداكن والخط العربي */
         body { font-family: 'Tahoma', sans-serif; background-color: #0d1117; color: #e5e7eb; }
-        
-        /* تصميم كروت القنوات */
+
         .channel-card { 
-            background-color: #5b21b6; /* بنفسجي متوسط */
+            background-color: #5b21b6;
             transition: transform 0.2s, box-shadow 0.2s; 
-            color: #ffffff; /* النص باللون الأبيض */
+            color: #ffffff;
             height: 120px; 
             display: flex;
             align-items: center;
@@ -23,20 +21,18 @@
         .channel-card:hover { 
             transform: translateY(-3px); 
             box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3); 
-            background-color: #4c1d95; /* يصبح أغمق عند التمرير */
+            background-color: #4c1d95;
         }
         .channel-name { 
             font-size: 1.5rem;
             font-weight: 800;
             cursor: pointer;
         }
-        
-        /* تنسيق مشغل الفيديو */
+
         #video-player-container {
             position: relative;
             width: 100%;
-            padding-top: 56.25%; /* نسبة 16:9 للفيديو */
-            /* يجب أن يكون هذا مخفياً في الكود، لكننا سنعرضه عبر JS */
+            padding-top: 56.25%;
         }
         #video-iframe {
             position: absolute;
@@ -46,10 +42,9 @@
             height: 100%;
             border: none;
         }
-        
-        /* زر الرجوع */
+
         .btn-back {
-            background-color: #f59e0b; /* لون برتقالي جذاب */
+            background-color: #f59e0b;
             transition: background-color 0.2s;
         }
         .btn-back:hover {
@@ -61,7 +56,7 @@
 
     <div class="max-w-6xl mx-auto mt-6">
         
-        <!-- صفحة عرض الفيديو (مخفية افتراضيا) -->
+        <!-- صفحة عرض الفيديو -->
         <div id="video-player-section" class="hidden">
             <button id="back-button" class="btn-back text-white font-bold py-2 px-4 rounded-lg mb-4 flex items-center shadow-lg transform active:scale-95">
                 <svg class="w-5 h-5 mr-2 rtl:ml-2 rtl:mr-0 transform rtl:rotate-180" fill="currentColor" viewBox="0 0 20 20">
@@ -70,31 +65,25 @@
                 العودة لقائمة القنوات
             </button>
             <div id="video-player-container" style="display: block; padding-top: 56.25%;">
-                <!-- سيتم تحميل البث هنا داخل Iframe -->
                 <iframe id="video-iframe" allow="autoplay; camera; microphone; fullscreen; speaker; display-capture"></iframe>
             </div>
         </div>
 
-        <!-- قائمة القنوات (ظاهرة افتراضيا) -->
+        <!-- قائمة القنوات -->
         <div id="channels-list-section">
-            <div id="channels-grid" 
-                 class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                <!-- سيتم ملء القنوات هنا بواسطة JavaScript -->
-            </div>
+            <div id="channels-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"></div>
         </div>
-        
     </div>
 
     <script>
-        // ************************************************************
-        // 1. بيانات القنوات (قم بتعديل 'view_id' لكل قناة)
-        // ************************************************************
-        // ** تم تعديل رابط البث الأساسي لإضافة &cleanout&iframe **
+        // **********************************************
+        // 1. بيانات القنوات
+        // **********************************************
         const VDO_NINJA_BASE_URL = "https://vdo.ninja/?view=";
-        const VDO_NINJA_PARAMS = "&cleanout&iframe"; // هذا يسمح بالاندماج داخل iFrame
+        const VDO_NINJA_PARAMS = "&cleanout&iframe";
 
         const CHANNELS_DATA = [
-            { id: 1, name: "beIN SPORTS 1", view_id: "https://vdo.ninja/?view=ikMLVyh" },
+            { id: 1, name: "beIN SPORTS 1", view_id: "ikMLVyh" },
             { id: 2, name: "beIN SPORTS 2", view_id: "your_vdo_id_2" },
             { id: 3, name: "beIN SPORTS 3", view_id: "your_vdo_id_3" },
             { id: 4, name: "beIN SPORTS 4", view_id: "your_vdo_id_4" },
@@ -106,19 +95,15 @@
             { id: 10, name: "beIN SPORTS 10", view_id: "your_vdo_id_10" },
             { id: 11, name: "beIN SPORTS 11", view_id: "your_vdo_id_11" },
         ];
-        
+
         const videoSection = document.getElementById('video-player-section');
         const listSection = document.getElementById('channels-list-section');
         const videoIframe = document.getElementById('video-iframe');
         const backButton = document.getElementById('back-button');
 
-        // ************************************************************
-        // 2. الدوال الرئيسية
-        // ************************************************************
-
-        /**
-         * دالة لإنشاء كرت (Card) لكل قناة
-         */
+        // **********************************************
+        // 2. إنشاء الكروت
+        // **********************************************
         function createChannelCard(channel) {
             const card = document.createElement('div');
             card.className = 'channel-card p-4 rounded-xl shadow-xl border border-purple-900 cursor-pointer text-center';
@@ -127,54 +112,67 @@
             return card;
         }
 
-        /**
-         * دالة لفتح رابط البث داخل مشغل الفيديو المدمج (Iframe)
-         * @param {string} viewId - كود البث الخاص بـ VDO.Ninja
-         */
+        // **********************************************
+        // 3. فتح البث بوضع أفقي + ملء الشاشة
+        // **********************************************
         function openStream(viewId) {
             if (viewId.includes('your_vdo_id')) {
                 alert('الرجاء تحديث كود البث لهذه القناة في ملف HTML.');
                 return;
             }
-            // بناء الرابط مع إضافة المعاملات الأمنية للسماح بالفتح في Iframe
-            const fullUrl = VDO_NINJA_BASE_URL + viewId + VDO_NINJA_PARAMS; 
-            
-            // 1. إخفاء قائمة القنوات وإظهار مشغل الفيديو
+
+            const fullUrl = VDO_NINJA_BASE_URL + viewId + VDO_NINJA_PARAMS;
             listSection.style.display = 'none';
             videoSection.classList.remove('hidden');
-
-            // 2. تحميل الرابط داخل الـ Iframe
             videoIframe.src = fullUrl;
+
+            // محاولة قفل الاتجاه إلى الوضع الأفقي
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(err => console.warn("تعذر قفل الاتجاه:", err));
+            }
+
+            // محاولة الدخول في وضع ملء الشاشة
+            const container = document.getElementById('video-player-container');
+            if (container.requestFullscreen) {
+                container.requestFullscreen().catch(() => {});
+            } else if (container.webkitRequestFullscreen) { // Safari
+                container.webkitRequestFullscreen();
+            }
         }
-        
-        /**
-         * دالة للعودة إلى قائمة القنوات (عند الضغط على زر الرجوع)
-         */
+
+        // **********************************************
+        // 4. إغلاق البث والعودة
+        // **********************************************
         function closeStream() {
-            // 1. إيقاف الفيديو (بمسح رابط الـ Iframe لمنع استمرار الصوت)
             videoIframe.src = '';
-            
-            // 2. إظهار قائمة القنوات وإخفاء مشغل الفيديو
+
+            // العودة للوضع الرأسي
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('portrait').catch(() => {});
+            }
+
+            // الخروج من ملء الشاشة
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {});
+            } else if (document.webkitFullscreenElement) {
+                document.webkitExitFullscreen();
+            }
+
             listSection.style.display = 'block';
             videoSection.classList.add('hidden');
         }
 
-
-        /**
-         * دالة لبدء عملية بناء الواجهة
-         */
+        // **********************************************
+        // 5. تهيئة الواجهة
+        // **********************************************
         function initializeGrid() {
             const gridContainer = document.getElementById('channels-grid');
             CHANNELS_DATA.forEach(channel => {
-                const card = createChannelCard(channel);
-                gridContainer.appendChild(card);
+                gridContainer.appendChild(createChannelCard(channel));
             });
-            
-            // ربط زر الرجوع بالدالة
             backButton.onclick = closeStream;
         }
 
-        // بدء تهيئة الواجهة عند تحميل الصفحة
         window.onload = initializeGrid;
     </script>
 </body>
